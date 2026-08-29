@@ -4001,7 +4001,6 @@ const compressImage = (file) => {
 
 const BankSoalAdmin = ({ db }) => {
         const [view, setView] = useState('list');
-        // TAMBAHAN: State kesulitan ditambahkan ke form bawaan (Default: Sedang)
         const [form, setForm] = useState({ pertanyaan: '', a: '', b: '', c: '', d: '', kunci: 'a', mapel: '', kesulitan: 'Sedang' });
         const [isSaving, setIsSaving] = useState(false);
         const [isGenerating, setIsGenerating] = useState(false);
@@ -4011,8 +4010,10 @@ const BankSoalAdmin = ({ db }) => {
 
         const [searchTerm, setSearchTerm] = useState('');
         const [filterMapel, setFilterMapel] = useState('Semua');
-        // TAMBAHAN: State untuk filter tingkat kesulitan
         const [filterKesulitan, setFilterKesulitan] = useState('Semua');
+        
+        // --- TAMBAHAN STATE UNTUK IMPORT CSV ---
+        const [isUploadingCsv, setIsUploadingCsv] = useState(false);
 
         useEffect(() => {
             if (!db) return;
@@ -4030,23 +4031,95 @@ const BankSoalAdmin = ({ db }) => {
             }
         }, [db]);
 
-        // LOGIKA FILTER DIPERBARUI
         const listMapelTersedia = ['Semua', ...new Set(soalList.map(s => s.mapel).filter(m => m && m.trim() !== ''))];
         const filteredSoalList = soalList.filter(soal => {
             const matchSearch = soal.pertanyaan.toLowerCase().includes(searchTerm.toLowerCase());
             const matchMapel = filterMapel === 'Semua' ? true : soal.mapel === filterMapel;
-            // Jika soal lama belum punya 'kesulitan', anggap saja 'Sedang'
             const levelSoal = soal.kesulitan || 'Sedang'; 
             const matchKesulitan = filterKesulitan === 'Semua' ? true : levelSoal === filterKesulitan;
             
             return matchSearch && matchMapel && matchKesulitan;
         });
 
-        const handleGenerateAi = async () => {
-            if (!topikAi) {
-                alert("Silakan ketik atau *paste* teks materi/topik bahasa Arab terlebih dahulu di kotak asisten!");
-                return;
+        // --- FUNGSI DOWNLOAD TEMPLATE CSV ---
+        const handleDownloadTemplate = () => {
+            const headers = ["Pertanyaan", "Pilihan A", "Pilihan B", "Pilihan C", "Pilihan D", "Kunci (a/b/c/d)", "Mapel", "Kesulitan (Mudah/Sedang/Sulit)"];
+            const sampleRow = ["Apa arti مَكْتَبٌ dalam bahasa Indonesia?", "Meja", "Kursi", "Lemari", "Papan Tulis", "a", "Bahasa Arab", "Mudah"];
+            
+            // Format ke CSV
+            const csvContent = headers.join(",") + "\n" + sampleRow.map(item => `"${item}"`).join(",");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "Template_Bank_Soal_RBA.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // --- FUNGSI PARSER CSV SEDERHANA ---
+        const parseCSV = (str) => {
+            const arr = []; let quote = false; let row = 0, col = 0;
+            for (let c = 0; c < str.length; c++) {
+                let cc = str[c], nc = str[c+1];
+                arr[row] = arr[row] || []; arr[row][col] = arr[row][col] || '';
+                if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; }
+                if (cc == '"') { quote = !quote; continue; }
+                if (cc == ',' && !quote) { ++col; continue; }
+                if (cc == '\r' && nc == '\n' && !quote) { ++row; col = 0; ++c; continue; }
+                if (cc == '\n' && !quote) { ++row; col = 0; continue; }
+                if (cc == '\r' && !quote) { ++row; col = 0; continue; }
+                arr[row][col] += cc;
             }
+            return arr;
+        };
+
+        // --- FUNGSI UPLOAD & PROSES CSV ---
+        const handleUploadCsv = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            setIsUploadingCsv(true);
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const text = event.target.result;
+                    const rows = parseCSV(text);
+                    
+                    let successCount = 0;
+                    // Loop dimulai dari 1 untuk melewati baris Header
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        // Pastikan baris tidak kosong dan memiliki 8 kolom
+                        if (row.length >= 8 && row[0].trim() !== '') {
+                            await addDoc(collection(db, "bankSoal"), {
+                                pertanyaan: row[0].trim(),
+                                a: row[1].trim(),
+                                b: row[2].trim(),
+                                c: row[3].trim(),
+                                d: row[4].trim(),
+                                kunci: row[5].trim().toLowerCase() || 'a',
+                                mapel: row[6].trim() || 'Umum',
+                                kesulitan: row[7].trim() || 'Sedang',
+                                createdAt: Date.now() + i
+                            });
+                            successCount++;
+                        }
+                    }
+                    alert(`Alhamdulillah, berhasil mengimpor ${successCount} soal ke dalam Bank Soal!`);
+                    e.target.value = null; // Reset input file
+                } catch (error) {
+                    alert("Terjadi kesalahan saat memproses file CSV. Pastikan format tabel sesuai template.");
+                    console.error(error);
+                }
+                setIsUploadingCsv(false);
+            };
+            reader.readAsText(file);
+        };
+
+        const handleGenerateAi = async () => {
+            if (!topikAi) { alert("Silakan ketik atau *paste* teks materi/topik bahasa Arab terlebih dahulu di kotak asisten!"); return; }
             setIsGenerating(true);
             try {
                 const promptText = `Anda adalah seorang Ustadz dan ahli pembuat soal evaluasi Bahasa Arab. 
@@ -4054,54 +4127,29 @@ const BankSoalAdmin = ({ db }) => {
                 Tugas Anda: Buatlah 1 soal pilihan ganda (Multiple Choice) yang berbobot, menanyakan isi atau makna dari materi tersebut. 
                 PENTING: Jangan menyalin teks acuan mentah-mentah ke pilihan jawaban. Buatlah kalimat pilihan A, B, C, dan D yang berbeda (ada 1 jawaban benar dan 3 pengecoh yang logis dalam bahasa Arab).
                 Berikan jawabannya HANYA dalam format JSON mentah tanpa teks lain dengan struktur persis seperti ini:
-                {
-                  "pertanyaan": "Kalimat pertanyaan baru dalam bahasa Arab berdasarkan materi di atas?",
-                  "a": "Pilihan jawaban pertama...",
-                  "b": "Pilihan jawaban kedua...",
-                  "c": "Pilihan jawaban ketiga...",
-                  "d": "Pilihan jawaban keempat...",
-                  "kunci": "a"
-                }`;
+                {"pertanyaan": "...", "a": "...", "b": "...", "c": "...", "d": "...", "kunci": "a"}`;
 
                 const res = await fetch(`https://text.pollinations.ai/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        messages: [{ role: "user", content: promptText }],
-                        model: "openai",
-                        jsonMode: true
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages: [{ role: "user", content: promptText }], model: "openai", jsonMode: true })
                 });
                 
                 const rawText = await res.text();
                 let cleanJson = rawText.trim();
                 if (cleanJson.includes("```")) {
                     const parts = cleanJson.split("```");
-                    for (let p of parts) {
-                        if (p.trim().startsWith("{")) {
-                            cleanJson = p.replace(/^json/, '').trim();
-                            break;
-                        }
-                    }
+                    for (let p of parts) { if (p.trim().startsWith("{")) { cleanJson = p.replace(/^json/, '').trim(); break; } }
                 }
                 
                 const parsedSoal = JSON.parse(cleanJson);
-
                 setForm({
                     pertanyaan: parsedSoal.pertanyaan || '',
-                    a: parsedSoal.a || '',
-                    b: parsedSoal.b || '',
-                    c: parsedSoal.c || '',
-                    d: parsedSoal.d || '',
+                    a: parsedSoal.a || '', b: parsedSoal.b || '', c: parsedSoal.c || '', d: parsedSoal.d || '',
                     kunci: parsedSoal.kunci ? parsedSoal.kunci.toLowerCase() : 'a',
-                    mapel: form.mapel,
-                    kesulitan: form.kesulitan // Pertahankan level saat ini
+                    mapel: form.mapel, kesulitan: form.kesulitan 
                 });
                 alert("Alhamdulillah! Soal pilihan ganda berhasil di-generate dari teks Anda! ✨");
-            } catch (error) {
-                console.error("Gagal parse:", error);
-                alert("Gagal memproses soal. Silakan coba klik Generate AI sekali lagi.");
-            }
+            } catch (error) { alert("Gagal memproses soal. Silakan coba klik Generate AI sekali lagi."); }
             setIsGenerating(false);
         };
         
@@ -4114,41 +4162,23 @@ const BankSoalAdmin = ({ db }) => {
             try {
                 if (editingId) {
                     await updateDoc(doc(db, "bankSoal", editingId), {
-                        pertanyaan: form.pertanyaan,
-                        a: form.a,
-                        b: form.b,
-                        c: form.c,
-                        d: form.d,
-                        kunci: form.kunci,
-                        mapel: form.mapel,
-                        kesulitan: form.kesulitan || 'Sedang'
+                        pertanyaan: form.pertanyaan, a: form.a, b: form.b, c: form.c, d: form.d,
+                        kunci: form.kunci, mapel: form.mapel, kesulitan: form.kesulitan || 'Sedang'
                     });
                     alert("Alhamdulillah, soal berhasil diperbarui!");
                 } else {
                     await addDoc(collection(db, "bankSoal"), {
-                        pertanyaan: form.pertanyaan,
-                        a: form.a,
-                        b: form.b,
-                        c: form.c,
-                        d: form.d,
-                        kunci: form.kunci,
-                        mapel: form.mapel,
-                        kesulitan: form.kesulitan || 'Sedang',
-                        createdAt: Date.now()
+                        ...form, kesulitan: form.kesulitan || 'Sedang', createdAt: Date.now()
                     });
                     alert("Alhamdulillah, soal baru berhasil ditambahkan!");
                 }
                 setEditingId(null);
                 setForm({ pertanyaan: '', a: '', b: '', c: '', d: '', kunci: 'a', mapel: '', kesulitan: 'Sedang' });
                 setView('list');
-            } catch (error) {
-                console.error(error);
-                alert("Gagal menyimpan ke Database: " + error.message);
-            }
+            } catch (error) { alert("Gagal menyimpan ke Database: " + error.message); }
             setIsSaving(false);
         };
 
-        // Fungsi pembantu warna badge
         const renderKesulitanBadge = (lvl) => {
             const level = lvl || 'Sedang';
             if (level === 'Mudah') return <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">🟢 Mudah</span>;
@@ -4158,25 +4188,37 @@ const BankSoalAdmin = ({ db }) => {
 
         return (
             <div className="p-4 md:p-6 w-full max-w-5xl mx-auto space-y-6 animate-slide-up pb-24">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-800 pb-4">
                     <div>
                         <Badge variant="blue" className="mb-2">PUSAT EVALUASI</Badge>
                         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Bank Soal Pusat</h1>
                     </div>
                     {view === 'list' && (
-                        <Button onClick={() => {
-                            setEditingId(null);
-                            setForm({ pertanyaan: '', a: '', b: '', c: '', d: '', kunci: 'a', mapel: '', kesulitan: 'Sedang' });
-                            setView('form');
-                        }} className="gap-2 border-none bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30">
-                            <PlusCircle size={18} /> Tambah Soal
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {/* TOMBOL IMPORT EXCEL/CSV */}
+                            <Button variant="outline" onClick={handleDownloadTemplate} className="gap-2 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-xs sm:text-sm">
+                                📥 Template CSV
+                            </Button>
+                            
+                            <label className={`inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-300 cursor-pointer flex-shrink-0 px-4 py-2 text-sm min-h-[44px] gap-2 border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 ${isUploadingCsv ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                {isUploadingCsv ? <Loader2 size={16} className="animate-spin"/> : <UploadCloud size={16} />} 
+                                {isUploadingCsv ? 'Memproses...' : 'Upload CSV'}
+                                <input type="file" accept=".csv" onChange={handleUploadCsv} disabled={isUploadingCsv} className="hidden" />
+                            </label>
+
+                            <Button onClick={() => {
+                                setEditingId(null);
+                                setForm({ pertanyaan: '', a: '', b: '', c: '', d: '', kunci: 'a', mapel: '', kesulitan: 'Sedang' });
+                                setView('form');
+                            }} className="gap-2 border-none bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 text-xs sm:text-sm">
+                                <PlusCircle size={18} /> Tambah Manual
+                            </Button>
+                        </div>
                     )}
                 </div>
 
                 {view === 'list' ? (
                     <>
-                        {/* KOTAK PENCARIAN & FILTER MAPEL + KESULITAN */}
                         {soalList.length > 0 && (
                             <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
                                 <div className="relative flex-1">
@@ -4206,7 +4248,7 @@ const BankSoalAdmin = ({ db }) => {
                             <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl shadow-sm border-2 border-dashed border-slate-200 dark:border-slate-800 text-center mt-8">
                                 <FileQuestion size={64} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
                                 <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">Belum Ada Soal</h3>
-                                <p className="text-slate-500 max-w-md mx-auto">Bank soal masih kosong. Klik tombol "Tambah Soal" di atas untuk mulai membuat pertanyaan pertama Anda.</p>
+                                <p className="text-slate-500 max-w-md mx-auto">Bank soal masih kosong. Silakan download template CSV dan upload massal, atau klik Tambah Manual.</p>
                             </div>
                         ) : filteredSoalList.length === 0 ? (
                             <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl shadow-sm border-2 border-dashed border-slate-200 dark:border-slate-800 text-center mt-4">
@@ -4279,7 +4321,6 @@ const BankSoalAdmin = ({ db }) => {
                             <Button variant="ghost" onClick={() => setView('list')} className="text-slate-400 hover:text-rose-500"><X size={20} /></Button>
                         </div>
 
-                        {/* Kotak Asisten AI Generator */}
                         {!editingId && (
                             <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800/80 border border-blue-100 dark:border-slate-700 flex flex-col sm:flex-row items-center gap-3">
                                 <div className="flex-1 w-full">
