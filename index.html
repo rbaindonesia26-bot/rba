@@ -3296,11 +3296,14 @@ const handleQuizSubmit = async () => {
                          <div className="flex-1">
                             <Badge variant="slate" className="!text-[10px] uppercase mb-3">{activeModul.type.replace('_', ' ')}</Badge>
                             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-2">{activeModul.title}</h1>
-<div className="bg-blue-50 dark:bg-slate-800 border-l-4 border-blue-500 p-4 mt-2 rounded-r-lg shadow-sm overflow-hidden">
-    <p dir="auto" className="text-blue-900 dark:text-blue-100 font-medium whitespace-pre-wrap text-base sm:text-lg leading-relaxed">{activeModul.desc}</p>
+<div className="bg-blue-50 dark:bg-slate-800 border-l-4 border-blue-500 p-4 sm:p-5 mt-2 rounded-r-lg shadow-sm overflow-hidden">
+    <div className="text-blue-900 dark:text-blue-100 font-medium text-base sm:text-lg leading-relaxed flex flex-col gap-2">
+        {activeModul.desc ? activeModul.desc.split('\n').map((line, idx) => (
+            <div key={idx} dir="auto" className="min-h-[1.5rem] break-words">{line}</div>
+        )) : null}
+    </div>
 </div>
-  </div>
-                         
+  </div>    
                          <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
                             {(role === 'admin' || role === 'guru') ? (
                                 <Button size="md" variant="white" className="w-full sm:w-auto bg-blue-50 border border-blue-200 text-blue-600 cursor-default pointer-events-none">
