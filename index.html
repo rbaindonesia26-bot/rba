@@ -2522,7 +2522,7 @@
                           <h3 className="text-2xl sm:text-3xl font-black mb-6">{modulForm.id ? 'Edit Tahapan' : 'Tambah Tahapan Baru'}</h3>
                           <form onSubmit={handleSaveModul} className="space-y-6">
                               <div><label className="block text-sm sm:text-base font-bold mb-2">Judul</label><input type="text" required value={modulForm.title || ''} onChange={e => setModulForm({...modulForm, title: e.target.value})} className="w-full px-4 py-3 sm:py-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-600 text-sm sm:text-base" /></div>
-                              <div><label className="block text-sm sm:text-base font-bold mb-2">Deskripsi</label><textarea required rows="3" value={modulForm.desc || ''} onChange={e => setModulForm({...modulForm, desc: e.target.value})} className="w-full px-4 py-3 sm:py-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-600 text-sm sm:text-base resize-none"></textarea></div>
+                                <div><label className="block text-sm sm:text-base font-bold mb-2">Deskripsi Materi</label><textarea required rows="8" dir="auto" value={modulForm.desc || ''} onChange={e => setModulForm({...modulForm, desc: e.target.value})} className="w-full px-4 py-3 sm:py-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-600 text-sm sm:text-base min-h-[180px] resize-y custom-scrollbar leading-relaxed"></textarea></div>                              
                               <div>
                                   <label className="block text-sm sm:text-base font-bold mb-2">Jenis Materi</label>
                                   <select value={modulForm.type} onChange={e => setModulForm({...modulForm, type: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-600 text-sm">
@@ -3296,8 +3296,8 @@ const handleQuizSubmit = async () => {
                          <div className="flex-1">
                             <Badge variant="slate" className="!text-[10px] uppercase mb-3">{activeModul.type.replace('_', ' ')}</Badge>
                             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-2">{activeModul.title}</h1>
-<div className="bg-blue-50 dark:bg-slate-800 border-l-4 border-blue-500 p-4 mt-2 rounded-r-lg shadow-sm">
-    <p className="text-blue-900 dark:text-blue-100 font-medium whitespace-pre-wrap">{activeModul.desc}</p>
+<div className="bg-blue-50 dark:bg-slate-800 border-l-4 border-blue-500 p-4 mt-2 rounded-r-lg shadow-sm overflow-hidden">
+    <p dir="auto" className="text-blue-900 dark:text-blue-100 font-medium whitespace-pre-wrap text-base sm:text-lg leading-relaxed">{activeModul.desc}</p>
 </div>
   </div>
                          
