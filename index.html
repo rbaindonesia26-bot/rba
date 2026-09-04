@@ -2453,9 +2453,36 @@
                </div>
                <form onSubmit={handleSave} className="space-y-5 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                   <div><label className="block text-sm font-bold mb-2">Judul Program</label><input type="text" required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-600 text-sm" /></div>
-                  <div><label className="block text-sm font-bold mb-2">Deskripsi Lengkap</label><textarea required rows="4" value={formData.desc || ''} onChange={e => setFormData({...formData, desc: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-600 text-sm resize-none"></textarea></div>
-                  <div className="grid grid-cols-2 gap-4">
-                     <div>
+<div>
+    <div className="flex justify-between items-center mb-2">
+        <label className="block text-sm font-bold">Deskripsi Lengkap</label>
+        <div className="flex gap-1.5">
+            <button type="button" onClick={() => {
+                const ta = document.getElementById('desc-input');
+                const start = ta.selectionStart, end = ta.selectionEnd;
+                const text = formData.desc || '';
+                const newVal = text.substring(0, start) + '<b>' + text.substring(start, end) + '</b>' + text.substring(end);
+                setFormData({...formData, desc: newVal});
+            }} className="px-2 py-0.5 text-xs font-bold bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded text-slate-700 dark:text-slate-200" title="Tebal (Bold)">B</button>
+            <button type="button" onClick={() => {
+                const ta = document.getElementById('desc-input');
+                const start = ta.selectionStart, end = ta.selectionEnd;
+                const text = formData.desc || '';
+                const newVal = text.substring(0, start) + '<i>' + text.substring(start, end) + '</i>' + text.substring(end);
+                setFormData({...formData, desc: newVal});
+            }} className="px-2 py-0.5 text-xs italic bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded text-slate-700 dark:text-slate-200" title="Miring (Italic)">I</button>
+            <button type="button" onClick={() => {
+                const ta = document.getElementById('desc-input');
+                const start = ta.selectionStart, end = ta.selectionEnd;
+                const text = formData.desc || '';
+                const newVal = text.substring(0, start) + '<span style="color:#2563eb">' + text.substring(start, end) + '</span>' + text.substring(end);
+                setFormData({...formData, desc: newVal});
+            }} className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded font-semibold" title="Teks Biru">Warna</button>
+        </div>
+    </div>
+    <textarea id="desc-input" required rows="4" value={formData.desc || ''} onChange={(e) => setFormData({...formData, desc: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500"></textarea>
+</div>
+                 <div>
                         <label className="block text-sm font-bold mb-2">Kategori</label>
                         <select value={formData.kategori} onChange={e => setFormData({...formData, kategori: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-600 text-sm">
                            <option value="Bahasa Arab">Bahasa Arab</option>
