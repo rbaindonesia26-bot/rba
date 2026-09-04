@@ -3097,28 +3097,27 @@
     <div key={idx} dir="auto" className="min-h-[1.5rem] break-words" dangerouslySetInnerHTML={{ __html: line }} />
 )) : null}
 </div>
-<div className="mt-auto pt-6 border-t border-slate-100 w-full">
-        {role === 'admin' && (
-            <div className="flex flex-col sm:flex-row gap-3 w-full mb-3">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white border-none flex-1" onClick={onGoToClass}>
-                    <MessageCircle size={18} className="mr-2"/> Masuk Kelas & Balas Diskusi
-                </Button>
-            </div>
-        )}
-        <div className="flex gap-3">
-            <Button variant="outline" onClick={onManage} className="flex-1">
-                <FolderOpen size={18} className="mr-2"/> {role === 'admin' ? 'Manajemen Program' : 'Kelola Materi'}
-            </Button>
-            {role !== 'admin' && role !== 'guru' && (
-                <>
-                    {enrollmentStatus === 'approved' && <Button className="bg-emerald-600 hover:bg-emerald-700 text-white border-none" onClick={onGoToClass}><MonitorPlay size={18} className="mr-2"/> Lanjut Belajar</Button>}
-                    {enrollmentStatus === 'pending' && <Button className="bg-amber-500 text-white border-none opacity-80 cursor-not-allowed"><Clock size={18} className="mr-2"/> Menunggu Konfirmasi</Button>}
-                    {!enrollmentStatus && <Button className="bg-blue-600 text-white border-none" onClick={()=> onEnroll(program.id)}><PlusCircle size={18} className="mr-2"/> Minta Akses Kelas</Button>}
-                </>
-            )}
-        </div>
-    </div>
+                  <div className="mt-auto pt-6 border-t border-slate-100 w-full">
+                     {(role === 'admin' || role === 'guru') ? (
+                        <div className="flex flex-col sm:flex-row gap-3 w-full">
+                           <Button className="bg-blue-600 hover:bg-blue-700 text-white border-none flex-1" onClick={onGoToClass}>
+                              <MessageCircle size={18} className="mr-2"/> Masuk Kelas & Balas Diskusi
+                           </Button>
+                           <Button variant="outline" onClick={onManage} className="flex-1">
+                              <FolderOpen size={18} className="mr-2"/> {role === 'admin' ? 'Manajemen Program' : 'Kelola Materi'}
+                           </Button>
+                        </div>
+                     ) : (
+                        <div className="flex gap-3">
+                           {enrollmentStatus === 'approved' && <Button className="bg-emerald-600 hover:bg-emerald-700 text-white border-none" onClick={onGoToClass}><MonitorPlay size={18} className="mr-2"/> Lanjut Belajar</Button>}
+                           {enrollmentStatus === 'pending' && <Button className="bg-amber-500 text-white border-none opacity-80 cursor-not-allowed"><Clock size={18} className="mr-2"/> Menunggu Konfirmasi</Button>}
+                           {!enrollmentStatus && <Button className="bg-blue-600 hover:bg-blue-700 text-white border-none" onClick={() => onEnroll(program.id)}><PlusCircle size={18} className="mr-2"/> Minta Akses Kelas</Button>}
+                        </div>
+                     )}
                   </div>
+               </div>
+            </div>
+         </div>
       );
     };
 
@@ -4702,10 +4701,7 @@ const BankSoalAdmin = ({ db }) => {
           case 'profil': return <ProfilDanRapor uid={currentUserUid} currentUserToken={currentUserToken} usersData={usersData} enrollmentsData={safeEnrollments} courses={safeCourses} onShowSertifikat={(c) => { setSelectedClassroom(c); setActiveMenu('sertifikat'); }} db={db} />;
           case 'jadwal-akademik': return <JadwalAkademik schedules={schedules} role={role} db={db} />;
           case 'manajemen-pengguna': return <ManajemenPenggunaAdmin usersData={usersData} enrollments={safeEnrollments} courses={safeCourses} />;
-          case 'manajemen-program': 
-          return role === 'admin' 
-          ? <ManajemenProgramAdmin courses={safeCourses} db={db} storage={storage} />
-          : <div className="p-8 text-center text-slate-500">Maaf, menu Manajemen Program hanya dapat diakses oleh Administrator.</div>;
+          case 'manajemen-program': return <ManajemenProgramAdmin courses={safeCourses} db={db} storage={storage} />;
           case 'manajemen-perpustakaan': return <ManajemenPerpustakaanAdmin libraryData={libraryData} db={db} storage={storage} />;
           case 'persetujuan': return <PersetujuanAdmin enrollments={safeEnrollments} courses={safeCourses} usersData={usersData} db={db} />;
           case 'validasi-pendaftaran': return <ValidasiPendaftaranAdmin registrations={registrations} db={db} usersData={usersData} courses={safeCourses} />;
