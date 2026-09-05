@@ -2969,12 +2969,18 @@
                         <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 pointer-events-auto">
                            <span className="text-xs font-bold text-slate-500">{(prog.modules || []).length} Materi</span>
 <div className="flex gap-1 items-center">
-    {/* Tombol Lihat/Kelola Materi selalu ada untuk semua program */}
-    <button onClick={() => openModules(prog)} className="p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg" title={prog.creator_id && prog.creator_id !== currentUserUid ? "Lihat Materi (Pusat)" : "Kelola Materi"}>
-        <Layers size={16} />
-    </button>
+    {/* Tombol Kelola Materi / Tumpukan Kertas dikunci jika program pusat dan yang login guru */}
+    {(role === 'admin' || (prog.creator_id && prog.creator_id === currentUserUid)) ? (
+        <button onClick={() => openModules(prog)} className="p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg" title="Kelola Materi">
+            <Layers size={16} />
+        </button>
+    ) : (
+        <span className="p-2 text-slate-300 dark:text-slate-600 cursor-not-allowed" title="Materi Pusat Dikunci (Hanya Admin)">
+            🔒
+        </span>
+    )}
     
-    {/* Gembok / Tombol Aksi Edit & Hapus hanya muncul jika Admin atau Pembuat Asli Program */}
+    {/* Tombol Edit & Hapus */}
     {(role === 'admin' || (prog.creator_id && prog.creator_id === currentUserUid)) ? (
         <>
             <button onClick={() => handleEdit(prog)} className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg" title="Edit Program"><PenTool size={16} /></button>
