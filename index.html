@@ -4905,7 +4905,7 @@ if (isAppInitializing) return (
 {role === 'guru' && (
     <>
         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2 mt-6">Ruang Pengajar</div>
-        <SidebarItem icon={BookOpen} label="Kelas & Program Saya" isActive={activeMenu === 'kelas-saya' || activeMenu === 'ruang-kelas'} onClick={() => setActiveMenu('kelas-saya')} />
+        <SidebarItem icon={BookOpen} label="Program Ajar" isActive={activeMenu === 'kelas-saya' || activeMenu === 'ruang-kelas'} onClick={() => setActiveMenu('kelas-saya')} />
         <SidebarItem icon={FolderOpen} label="Kelola Materi Kelas" isActive={activeMenu === 'manajemen-program'} onClick={() => setActiveMenu('manajemen-program')} />
         <SidebarItem icon={User} label="Profil Pengajar" isActive={activeMenu === 'profil' || activeMenu === 'sertifikat'} onClick={() => setActiveMenu('profil')} />
     </>
