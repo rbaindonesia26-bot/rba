@@ -2186,7 +2186,7 @@
       );
     };
 
-    const ManajemenProgramAdmin = ({ courses, db, storage }) => {
+    const ManajemenProgramAdmin = ({ courses, db, storage, role, currentUserUid }) => {
       const [view, setView] = useState('list');
       const [formData, setFormData] = useState({ id: '', title: '', desc: '', kategori: "Bahasa Arab", status: 'Draft', coverUrl: '' });
       const [kategoriFilter, setKategoriFilter] = useState('Semua');
