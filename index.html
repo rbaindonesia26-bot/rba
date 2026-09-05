@@ -4781,7 +4781,6 @@ const PersetujuanAdmin = ({ enrollments, courses, usersData, db }) => {
             }, { merge: true });
             
             alert(`Permintaan berhasil diubah menjadi: ${newStatus === 'approved' ? 'Disetujui ✅' : 'Ditolak ❌'}`);
-            window.location.reload();
         } catch (e) {
             alert('Gagal memproses aksi: ' + e.message);
         }
