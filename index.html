@@ -3020,8 +3020,8 @@
 const PersetujuanAdmin = ({ enrollments, courses, usersData, db }) => {
     let pendingList = [];
     if (enrollments) {
-        const enrollEntries = Array.isArray(enrollments) ? enrollments.map(item => [item.id, item.data()]) : Object.entries(enrollments);
-        enrollEntries.forEach(([uid, userData]) => {
+const       enrollEntries = Array.isArray(enrollments) ? enrollments.map(item => [item.id, (typeof item.data === 'function' ? item.data() : item)]) : (enrollments ? Object.entries(enrollments) : []);
+            enrollEntries.forEach(([uid, userData]) => {
             if (userData && userData.classes) {
                 Object.entries(userData.classes).forEach(([courseId, status]) => {
                     if (status === 'pending') {
