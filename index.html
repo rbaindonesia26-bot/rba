@@ -2578,8 +2578,10 @@
 </div>
                  <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
                      <Button type="button" variant="ghost" onClick={() => setView('list')}>Batal</Button>
-                     <Button type="submit" disabled={isSubmitting || isUploading} className="gap-2 border-none"><Save size={18}/> Simpan Program</Button>
-                  </div>
+                    {role === 'admin' && (
+                    <Button type="submit" disabled={isSubmitting || isUploading} className="gap-2 border-none"><Save size={18}/> Simpan Program</Button>
+                    )}
+                 </div>
                </form>
             </div>
          );
