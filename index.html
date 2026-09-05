@@ -4706,7 +4706,7 @@ const BankSoalAdmin = ({ db }) => {
           case 'profil': return <ProfilDanRapor uid={currentUserUid} currentUserToken={currentUserToken} usersData={usersData} enrollmentsData={safeEnrollments} courses={safeCourses} onShowSertifikat={(c) => { setSelectedClassroom(c); setActiveMenu('sertifikat'); }} db={db} />;
           case 'jadwal-akademik': return <JadwalAkademik schedules={schedules} role={role} db={db} />;
           case 'manajemen-pengguna': return <ManajemenPenggunaAdmin usersData={usersData} enrollments={safeEnrollments} courses={safeCourses} />;
-          case 'manajemen-program': return <ManajemenProgramAdmin courses={safeCourses} db={db} storage={storage} />;
+          case 'manajemen-program': return <ManajemenProgramAdmin courses={safeCourses} db={db} storage={storage} role={role} currentUserUid={currentUserUid} />;
           case 'manajemen-perpustakaan': return <ManajemenPerpustakaanAdmin libraryData={libraryData} db={db} storage={storage} />;
           case 'persetujuan': return <PersetujuanAdmin enrollments={safeEnrollments} courses={safeCourses} usersData={usersData} db={db} />;
           case 'validasi-pendaftaran': return <ValidasiPendaftaranAdmin registrations={registrations} db={db} usersData={usersData} courses={safeCourses} />;
