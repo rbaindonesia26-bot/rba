@@ -2968,14 +2968,22 @@
                         <h3 className="font-bold text-base mb-2 line-clamp-2 text-slate-900 dark:text-white">{prog.title}</h3>
                         <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 pointer-events-auto">
                            <span className="text-xs font-bold text-slate-500">{(prog.modules || []).length} Materi</span>
-<div className="flex gap-1">
-    <button onClick={() => openModules(prog)} className="p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg" title="Kelola Materi"><Layers size={16} /></button>
+<div className="flex gap-1 items-center">
+    {/* Tombol Lihat/Kelola Materi selalu ada untuk semua program */}
+    <button onClick={() => openModules(prog)} className="p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg" title={prog.creator_id && prog.creator_id !== currentUserUid ? "Lihat Materi (Pusat)" : "Kelola Materi"}>
+        <Layers size={16} />
+    </button>
     
-    {(role === 'admin' || prog.creator_id === currentUserUid) && (
+    {/* Gembok / Tombol Aksi Edit & Hapus hanya muncul jika Admin atau Pembuat Asli Program */}
+    {(role === 'admin' || (prog.creator_id && prog.creator_id === currentUserUid)) ? (
         <>
             <button onClick={() => handleEdit(prog)} className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg" title="Edit Program"><PenTool size={16} /></button>
             <button onClick={() => setCourseToDelete(prog)} className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg" title="Hapus Program"><Trash2 size={16} /></button>
         </>
+    ) : (
+        <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-md flex items-center gap-1" title="Program Pusat (Hanya Lihat)">
+            🔒 Pusat
+        </span>
     )}
 </div>
                         </div>
