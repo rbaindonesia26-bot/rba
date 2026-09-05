@@ -2968,11 +2968,16 @@
                         <h3 className="font-bold text-base mb-2 line-clamp-2 text-slate-900 dark:text-white">{prog.title}</h3>
                         <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 pointer-events-auto">
                            <span className="text-xs font-bold text-slate-500">{(prog.modules || []).length} Materi</span>
-                           <div className="flex gap-1">
-                              <button onClick={() => openModules(prog)} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg" title="Kelola Materi"><Layers size={16}/></button>
-                              <button onClick={() => handleEdit(prog)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="Edit Program"><PenTool size={16}/></button>
-                              <button onClick={() => setCourseToDelete(prog.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg" title="Hapus Program"><Trash2 size={16}/></button>
-                           </div>
+<div className="flex gap-1">
+    <button onClick={() => openModules(prog)} className="p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg" title="Kelola Materi"><Layers size={16} /></button>
+    
+    {(role === 'admin' || prog.creator_id === currentUserUid) && (
+        <>
+            <button onClick={() => handleEdit(prog)} className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg" title="Edit Program"><PenTool size={16} /></button>
+            <button onClick={() => setCourseToDelete(prog)} className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg" title="Hapus Program"><Trash2 size={16} /></button>
+        </>
+    )}
+</div>
                         </div>
                      </div>
                   </Card>
