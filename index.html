@@ -3022,16 +3022,17 @@
       Object.entries(enrollments).forEach(([uid, userData]) => {
          if (userData && userData.classes) {
             Object.entries(userData.classes).forEach(([courseId, status]) => {
-               if (status === 'pending') {
-                  const userEntry = Object.entries(usersData).find(([token, u]) => u.uid === uid);
-                  const courseObj = courses.find(c => c.id === courseId);
-                  
-                  const userName = userEntry ? (userEntry[1].name || userEntry[0]) : 'Santri Baru (Proses Data)';
-                  const userToken = userEntry ? userEntry[0] : uid.substring(0,8).toUpperCase();
-                  const courseTitle = courseObj ? courseObj.title : 'Kelas Terhapus / Proses';
-                  
-                  pendingList.push({ uid, courseId, userName, userToken, courseTitle });
-               }
+                  if (status === 'pending') {
+                        const userEntry = usersData ? Object.entries(usersData).find(([token, u]) => u && u.uid === uid) : null;
+                        const courseObj = courses ? courses.find(c => c && c.id === courseId) : null;
+                        
+                        const userName = userEntry && userEntry[1] ? (userEntry[1].name || userEntry[1].username || 'Pengguna') : 'Guru / Santri (Akun)';
+                        const userToken = userEntry ? userEntry[0].substring(0,8).toUpperCase() : uid.substring(0,8).toUpperCase();
+                        const courseTitle = courseObj ? courseObj.title : 'Kelas / Program';
+                        
+                        pendingList.push({ uid, courseId, userName, userToken, courseTitle });
+                    }
+            }
             });
          }
       });
