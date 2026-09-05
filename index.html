@@ -3135,9 +3135,10 @@
                             {enrollmentStatus === 'pending' && <Button className="bg-amber-500 text-white border-none opacity-80 cursor-not-allowed"><Clock size={18} className="mr-2"/> Menunggu Konfirmasi</Button>}
                             {!enrollmentStatus && <Button className="bg-blue-600 hover:bg-blue-700 text-white border-none" onClick={() => onEnroll(program.id)}><PlusCircle size={18} className="mr-2"/> Minta Akses Kelas</Button>}
                         </div>
+                          </div>
+                        )}
                     </div>
-                )}
-                  </div>
+                </div>
             </div>
          </div>
       );
