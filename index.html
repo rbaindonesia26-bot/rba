@@ -4740,18 +4740,23 @@ const BankSoalAdmin = ({ db }) => {
             </div>
         );
     };
-      const PersetujuanAdmin = ({ enrollments, courses, usersData, db }) => {
+const PersetujuanAdmin = ({ enrollments, courses, usersData, db }) => {
     let pendingList = [];
     if (enrollments) {
-        const enrollEntries = Array.isArray(enrollments) ? enrollments.map(item => [item.id, (typeof item.data === 'function' ? item.data() : item)]) : (enrollments ? Object.entries(enrollments) : []);
+        const enrollEntries = Array.isArray(enrollments) 
+            ? enrollments.map(item => [item.id, (typeof item.data === 'function' ? item.data() : item)]) 
+            : Object.entries(enrollments);
+
         enrollEntries.forEach(([uid, userData]) => {
-            if (userData && userData.classes) {
-                Object.entries(userData.classes).forEach(([courseId, status]) => {
+            const dataObj = (userData && typeof userData.data === 'function') ? userData.data() : userData;
+            
+            if (dataObj && dataObj.classes) {
+                Object.entries(dataObj.classes).forEach(([courseId, status]) => {
                     if (status === 'pending') {
-                        const userEntry = usersData ? Object.entries(usersData).find(([token, u]) => u && u.uid === uid) : null;
+                        const userEntry = usersData ? Object.entries(usersData).find(([token, u]) => u && (u.uid === uid || token === uid)) : null;
                         const courseObj = courses ? courses.find(c => c && c.id === courseId) : null;
                         
-                        const userName = userEntry && userEntry[1] ? (userEntry[1].name || userEntry[1].username || 'Pengguna') : 'Guru / Santri (Akun)';
+                        const userName = userEntry && userEntry[1] ? (userEntry[1].name || userEntry[1].username || 'Guru / Pengguna') : 'Guru / Santri (Akun)';
                         const userToken = userEntry ? userEntry[0].substring(0,8).toUpperCase() : uid.substring(0,8).toUpperCase();
                         const courseTitle = courseObj ? courseObj.title : 'Kelas / Program';
                         
