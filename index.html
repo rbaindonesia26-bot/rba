@@ -2493,7 +2493,8 @@
                </div>
                <form onSubmit={handleSave} className="space-y-5 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                   <div><label className="block text-sm font-bold mb-2">Judul Program</label><input type="text" required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-600 text-sm" /></div>
-  <div className="flex items-start gap-3 p-4 border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl mt-4">
+ </div>
+                 <div className="flex items-start gap-3 p-4 border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl mt-4">
     <div className="pt-0.5">
         <input 
             type="checkbox" 
@@ -2511,7 +2512,6 @@
             Jika dicentang, santri dapat membuka seluruh materi tanpa harus berurutan. (Catatan: Materi yang dibatasi oleh "Sekat Penahan / Bab" akan tetap terkunci hingga bab sebelumnya selesai).
         </p>
     </div>
-</div>
 </div>
     <label className="block text-sm font-bold mb-2">Deskripsi Lengkap</label>
     
