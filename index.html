@@ -2491,30 +2491,26 @@
                   <button onClick={() => setView('list')} className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 rounded-full"><ArrowLeft size={20} /></button>
                   <h1 className="text-2xl font-black text-slate-900 dark:text-white">{formData.id && String(formData.id).startsWith('crs_') ? 'Buat Program Baru' : 'Edit Program'}</h1>
                </div>
-               <form onSubmit={handleSave} className="space-y-5 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                  <div><label className="block text-sm font-bold mb-2">Judul Program</label><input type="text" required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-600 text-sm" /></div>
- </div>
-                 <div className="flex items-start gap-3 p-4 border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl mt-4">
-    <div className="pt-0.5">
-        <input 
-            type="checkbox" 
-            id="freeAccessToggle" 
-            checked={formData.freeAccess || false} 
-            onChange={(e) => setFormData({...formData, freeAccess: e.target.checked})} 
-            className="w-5 h-5 accent-emerald-600 rounded cursor-pointer" 
-        />
-    </div>
+<form onSubmit={handleSave} className="space-y-5 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
     <div>
-        <label htmlFor="freeAccessToggle" className="block text-sm font-bold text-slate-800 dark:text-white cursor-pointer">
-            Bebaskan Urutan Akses Materi (Mode Bebas)
-        </label>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Jika dicentang, santri dapat membuka seluruh materi tanpa harus berurutan. (Catatan: Materi yang dibatasi oleh "Sekat Penahan / Bab" akan tetap terkunci hingga bab sebelumnya selesai).
-        </p>
+        <label className="block text-sm font-bold mb-2">Judul Program</label>
+        <input type="text" required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Contoh: Belajar Bahasa Arab Dasar" />
     </div>
-</div>
-    <label className="block text-sm font-bold mb-2">Deskripsi Lengkap</label>
-    
+
+    {/* Saklar Mode Bebas */}
+    <div className="flex items-start gap-3 p-4 border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 rounded-xl mt-4">
+        <div className="pt-0.5">
+            <input type="checkbox" id="freeAccessToggle" checked={formData.freeAccess || false} onChange={(e) => setFormData({...formData, freeAccess: e.target.checked})} className="w-5 h-5 accent-emerald-600 rounded cursor-pointer" />
+        </div>
+        <div>
+            <label htmlFor="freeAccessToggle" className="block text-sm font-bold text-slate-800 dark:text-white cursor-pointer">Bebaskan Urutan Akses Materi (Mode Bebas)</label>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Jika dicentang, santri dapat membuka seluruh materi tanpa harus berurutan. (Catatan: Materi yang dibatasi oleh "Sekat Penahan / Bab" akan tetap terkunci hingga bab sebelumnya selesai).</p>
+        </div>
+    </div>
+
+    <div>
+        <label className="block text-sm font-bold mb-2">Deskripsi Lengkap</label>
+      
     {/* Deretan Tombol Format Cepat untuk Program */}
     <div className="flex flex-wrap gap-2 mb-2 select-none">
         {[
