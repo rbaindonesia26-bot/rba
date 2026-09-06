@@ -2630,11 +2630,49 @@ if (view === 'modules') {
                                        <Badge variant="slate" className="!text-[9px] sm:!text-[10px] mt-1"><Icon size={12} className={Meta.color}/> {Meta.label}</Badge>
                                    </div>
                                </div>
-                               <div className="flex gap-2">
-                                   <button onClick={() => { setModulForm(m); setIsModulFormOpen(true); }} className="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-lg"><PenTool size={16}/></button>
-                                   <button onClick={() => setModulToDelete(m.id)} className="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-lg"><Trash2 size={16}/></button>
-                               </div>
-                           </Card>
+{/* Tombol Panah Geser, Edit & Hapus */}
+<div className="flex gap-2 items-center">
+    {/* Grup Tombol Panah Naik Turun */}
+    <div className="flex gap-1 mr-1 sm:mr-3 border-r border-slate-200 dark:border-slate-700 pr-2 sm:pr-4">
+        <button 
+            onClick={async (e) => {
+                e.stopPropagation();
+                if (i === 0) return;
+                const newModules = [...modules];
+                const temp = newModules[i]; newModules[i] = newModules[i - 1]; newModules[i - 1] = temp;
+                const updatedCourse = { ...activeCourse, modules: newModules };
+                setActiveCourse(updatedCourse);
+                try { let coursesData = [...courses]; const cIdx = coursesData.findIndex(c => c.id === activeCourse.id); if (cIdx >= 0) { coursesData[cIdx] = updatedCourse; await setDoc(doc(db, "rba_lms", "main_db"), { courses: coursesData }, { merge: true }); } } catch (err) {}
+            }} 
+            disabled={i === 0} 
+            className={`p-1.5 rounded-lg transition-colors ${i === 0 ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40'}`} 
+            title="Geser ke Atas"
+        >
+            <ChevronDown size={18} className="rotate-180" />
+        </button>
+        <button 
+            onClick={async (e) => {
+                e.stopPropagation();
+                if (i === modules.length - 1) return;
+                const newModules = [...modules];
+                const temp = newModules[i]; newModules[i] = newModules[i + 1]; newModules[i + 1] = temp;
+                const updatedCourse = { ...activeCourse, modules: newModules };
+                setActiveCourse(updatedCourse);
+                try { let coursesData = [...courses]; const cIdx = coursesData.findIndex(c => c.id === activeCourse.id); if (cIdx >= 0) { coursesData[cIdx] = updatedCourse; await setDoc(doc(db, "rba_lms", "main_db"), { courses: coursesData }, { merge: true }); } } catch (err) {}
+            }} 
+            disabled={i === modules.length - 1} 
+            className={`p-1.5 rounded-lg transition-colors ${i === modules.length - 1 ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40'}`} 
+            title="Geser ke Bawah"
+        >
+            <ChevronDown size={18} />
+        </button>
+    </div>
+
+    {/* Tombol Edit & Hapus Asli */}
+    <button onClick={() => { setModulForm(m); setIsModulFormOpen(true); }} className="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 rounded-lg"><PenTool size={16}/></button>
+    <button onClick={() => setModulToDelete(m.id)} className="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 rounded-lg"><Trash2 size={16}/></button>
+</div>
+      </Card>
                        );
                    })}
                 </div>
@@ -4098,7 +4136,7 @@ const compressImage = (file) => {
       ];
 
       const [isLoggedIn, setIsLoggedIn] = useState(false);
-      const [role, setRole] = useState('siswa'); 
+      const [role, setRole] = useState('');
       const [userName, setUserName] = useState('');
       const [currentUserToken, setCurrentUserToken] = useState('');
       const [currentUserUid, setCurrentUserUid] = useState('');
@@ -4779,6 +4817,54 @@ if (isAppInitializing) return (
         <ThemeContext.Provider value="admin">
            <InstallPrompt />
            <LandingPage onLogin={handleLoginSuccess} usersData={usersData} isDbReady={firebaseStatus !== 'connecting'} coursesData={courses} darkMode={darkMode} toggleDarkMode={() => setDarkMode(!darkMode)} lang={lang} setLang={setLang} pengumuman={pengumuman} libraryData={libraryData} />
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around items-center p-2 pb-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <div className="flex justify-around items-center w-full">
+            
+            {/* BERANDA (Kembali ke paling atas) */}
+            <button onClick={() => { 
+              window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            }} className="flex flex-col items-center justify-center p-2 w-16 transition-colors text-emerald-600 dark:text-emerald-500">
+              <LayoutDashboard size={22} className="fill-emerald-100 dark:fill-emerald-900/30" />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Beranda</span>
+            </button>
+
+            {/* KATALOG (Memicu tombol 'Lihat Program' atau bagian program di LandingPage) */}
+            <button onClick={() => { 
+              const programBtn = Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Lihat Program') || el.textContent.includes('Program'));
+              if(programBtn) {
+                programBtn.click();
+              } else {
+                window.scrollBy({ top: 450, behavior: 'smooth' });
+              }
+            }} className="flex flex-col items-center justify-center p-2 w-16 transition-colors text-slate-500 dark:text-slate-400">
+              <BookOpen size={22} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Katalog</span>
+            </button>
+
+            {/* PUSTAKA (Memicu tombol navigasi perpustakaan/modul publik jika ada) */}
+            <button onClick={() => { 
+              const libraryBtn = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('Pustaka') || el.textContent.includes('Perpustakaan') || el.textContent.includes('Modul'));
+              if(libraryBtn) {
+                libraryBtn.click();
+              } else {
+                window.scrollBy({ top: 900, behavior: 'smooth' });
+              }
+            }} className="flex flex-col items-center justify-center p-2 w-16 transition-colors text-slate-500 dark:text-slate-400">
+              <Library size={22} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Pustaka</span>
+            </button>
+
+            {/* MASUK / PROFIL (Memicu tombol masuk di header atas) */}
+            <button onClick={() => {
+              const loginBtn = document.querySelector('button.bg-blue-600, button[class*="Masuk"], header button');
+              if(loginBtn) loginBtn.click();
+            }} className="flex flex-col items-center justify-center p-2 w-16 transition-colors text-slate-500 dark:text-slate-400">
+              <User size={22} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Masuk</span>
+            </button>
+
+          </div>
+        </div>
         </ThemeContext.Provider>
       );
 
@@ -4910,11 +4996,110 @@ if (isAppInitializing) return (
                 </div>
               </div>
             </header>
-            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-slate-50 dark:bg-[#0B1120]">{renderContent()}</div>
-          </main>
-        </div>
-        </ThemeContext.Provider>
-      );
+            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-slate-50 dark:bg-[#0B1120] pb-36 md:pb-6">{renderContent()}</div>
+          </main>      
+          
+      {/* ========================================= */}
+      {/* BILAH NAVIGASI BAWAH RESPONSIF (RBA)      */}
+      {/* ========================================= */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around items-center p-2 pb-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        
+        {/* 1. JIKA BELUM LOGIN / TAMU (MUNCUL JIKA BELUM LOGIN / ROLE KOSONG) */}
+        {(!isLoggedIn || !role || role === '') && (
+          <div className="flex justify-around items-center w-full">
+            <button onClick={() => setActiveMenu('dashboard')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'dashboard' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <LayoutDashboard size={22} className={activeMenu === 'dashboard' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Beranda</span>
+            </button>
+            <button onClick={() => setActiveMenu('katalog-program')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'katalog-program' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <BookOpen size={22} className={activeMenu === 'katalog-program' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Katalog</span>
+            </button>
+            <button onClick={() => setActiveMenu('perpustakaan')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'perpustakaan' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <Library size={22} className={activeMenu === 'perpustakaan' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Pustaka</span>
+            </button>
+            <button onClick={() => setActiveMenu('profil')} className="flex flex-col items-center justify-center p-2 w-16 transition-colors text-slate-500 dark:text-slate-400">
+              <User size={22} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Masuk</span>
+            </button>
+          </div>
+        )}
+
+  {/* JIKA ADMIN */}
+        {role === 'admin' && isLoggedIn && !isSidebarOpen && (
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around items-center p-2 pb-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <div className="flex justify-around items-center w-full">
+              <button onClick={() => setActiveMenu('validasi-pendaftaran')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'validasi-pendaftaran' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                <BookOpen size={22} className={activeMenu === 'validasi-pendaftaran' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+                <span className="text-[10px] mt-1.5 font-semibold text-center">Validasi</span>
+              </button>
+              <button onClick={() => setActiveMenu('manajemen-program')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'manajemen-program' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                <FolderOpen size={22} className={activeMenu === 'manajemen-program' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+                <span className="text-[10px] mt-1.5 font-semibold text-center">Program</span>
+              </button>
+              <button onClick={() => setActiveMenu('persetujuan')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'persetujuan' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                <LayoutDashboard size={22} className={activeMenu === 'persetujuan' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+                <span className="text-[10px] mt-1.5 font-semibold text-center">Setuju</span>
+              </button>
+              <button onClick={() => setActiveMenu('manajemen-pengguna')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'manajemen-pengguna' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                <User size={22} className={activeMenu === 'manajemen-pengguna' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+                <span className="text-[10px] mt-1.5 font-semibold text-center">Pengguna</span>
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* 3. JIKA GURU */}
+        {role === 'guru' && isLoggedIn && (
+          <div className="flex justify-around items-center w-full">
+            <button onClick={() => setActiveMenu('manajemen-program')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'manajemen-program' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <FolderOpen size={22} className={activeMenu === 'manajemen-program' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Materi</span>
+            </button>
+            <button onClick={() => setActiveMenu('kelas-saya')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'kelas-saya' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <BookOpen size={22} className={activeMenu === 'kelas-saya' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Kelas</span>
+            </button>
+            <button onClick={() => setActiveMenu('perpustakaan')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'perpustakaan' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <Library size={22} className={activeMenu === 'perpustakaan' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Pustaka</span>
+            </button>
+            <button onClick={() => setActiveMenu('profil')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'profil' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <User size={22} className={activeMenu === 'profil' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Profil</span>
+            </button>
+          </div>
+        )}
+
+        {/* 4. JIKA SISWA */}
+        {role === 'siswa' && isLoggedIn && (
+          <div className="flex justify-around items-center w-full">
+            <button onClick={() => setActiveMenu('dashboard')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'dashboard' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <LayoutDashboard size={22} className={activeMenu === 'dashboard' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Beranda</span>
+            </button>
+            <button onClick={() => setActiveMenu('katalog-program')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'katalog-program' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <BookOpen size={22} className={activeMenu === 'katalog-program' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Katalog</span>
+            </button>
+            <button onClick={() => setActiveMenu('perpustakaan')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'perpustakaan' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <Library size={22} className={activeMenu === 'perpustakaan' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Pustaka</span>
+            </button>
+            <button onClick={() => setActiveMenu('profil')} className={`flex flex-col items-center justify-center p-2 w-16 transition-colors ${activeMenu === 'profil' ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              <User size={22} className={activeMenu === 'profil' ? 'fill-emerald-100 dark:fill-emerald-900/30' : ''} />
+              <span className="text-[10px] mt-1.5 font-semibold text-center">Profil</span>
+            </button>
+          </div>
+        )}
+
+      </div>
+      {/* ========================================= */}
+          
+    </div>
+  </ThemeContext.Provider>
+);
     }
 
     const root = createRoot(document.getElementById('root'));
