@@ -1074,7 +1074,7 @@
                 
                 const textWa = `*KARTU AKSES RUMAH BAHASA ARAB* 🎓\n\nAssalamu'alaikum, Kak ${regData.nama}.\n\nAlhamdulillah, pendaftaran Anda untuk program *${regData.program}* telah kami verifikasi. Akses kelas Anda resmi diterbitkan!\n\n🔑 *Token (PIN):* *${newToken}*\n\n*Cara Masuk:*\n1. Buka tautan Rumah Bahasa Arab.\n2. Klik tombol "Masuk".\n3. Ketikkan Nama dan Token (PIN) di atas secara persis huruf besarnya.\n\nSelamat belajar di Rumah Bahasa Arab!`;
                 
-                window.open(`https://api.whatsapp.com/send?phone=${waNumber}&text=${encodeURIComponent(textWa)}`, '_blank');
+               window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(textWa)}`, '_blank'); 
 
             } catch (error) { 
                 console.error("Gagal approve", error); 
@@ -1282,6 +1282,58 @@
     };
 
     const DashboardGuru = ({ setActiveMenu, courses, userName, schedules }) => {
+      const handleExportCSV = async () => {
+      try {
+        alert("📥 Sedang merekap data nilai, mohon tunggu sebentar...");
+        const snap = await getDoc(doc(db, "rba_lms", "main_db"));
+        if (!snap.exists()) return alert("Data tidak ditemukan.");
+        const data = snap.data();
+        const users = data.users || {};
+        
+        let csv = "Nama Siswa,Program Kelas,Materi,Jenis Ujian,Nilai\n";
+        let hasData = false;
+
+        Object.values(users).forEach(user => {
+          if (user.progress) {
+            Object.keys(user.progress).forEach(courseId => {
+              const cProg = user.progress[courseId];
+              const cInfo = (data.courses || []).find(c => c.id === courseId);
+              const cName = cInfo ? cInfo.title : courseId;
+
+              if (cProg.modules) {
+                Object.keys(cProg.modules).forEach(modId => {
+                  const mData = cProg.modules[modId];
+                  const mInfo = (cInfo?.modules || []).find(m => m.id === modId);
+                  const mName = mInfo ? mInfo.title : modId;
+
+                  if (mData.score !== undefined && mData.score !== null) {
+                    csv += `"${user.name || 'Siswa'}","${cName}","${mName}","Kuis Pilihan Ganda","${mData.score}"\n`;
+                    hasData = true;
+                  }
+                  if (mData.tugasScore !== undefined && mData.tugasScore !== null) {
+                    csv += `"${user.name || 'Siswa'}","${cName}","${mName}","Tugas Upload","${mData.tugasScore}"\n`;
+                    hasData = true;
+                  }
+                });
+              }
+            });
+          }
+        });
+
+        if (!hasData) return alert("Belum ada data nilai santri yang masuk.");
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Rekap_Nilai_RBA.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        alert("Gagal mengunduh: " + err.message);
+      }
+    };
       const activeCourses = courses.filter(c => c.status === 'Aktif').length;
       const today = new Date().toDateString();
       const todaySchedulesCount = (schedules || []).filter(s => new Date(s.datetime).toDateString() === today).length;
@@ -1293,9 +1345,14 @@
               <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight">Ahlan, Ustadz/Ustadzah {userName}</h1>
               <p className="text-slate-500 text-xs sm:text-sm md:text-base mt-1">Pantau perkembangan kelas dan susun materi ajar Anda.</p>
             </div>
-            <Button variant="primary" size="sm" className="gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20 text-xs sm:text-sm border-none" onClick={() => setActiveMenu('manajemen-program')}>
-               <FolderOpen size={16}/> Kelola Materi Kelas
-            </Button>
+            <div className="flex flex-wrap gap-2">
+                <Button variant="primary" size="sm" className="gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20 text-xs sm:text-sm border-none" onClick={() => setActiveMenu('kelas-saya')}>
+                    <FolderOpen size={16}/> Kelola Materi Kelas
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-xs sm:text-sm bg-white" onClick={handleExportCSV}>
+                    📥 Unduh Nilai (CSV)
+                </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
@@ -1887,7 +1944,7 @@
       const handleSendWa = (user) => {
          const text = `*KARTU AKSES RUMAH BAHASA ARAB* 🎓\n\nAssalamu'alaikum, ${user.name || 'Calon Peserta'}.\n\nAkses masuk kelas pembelajaran Anda telah resmi diterbitkan. Harap simpan informasi rahasia ini:\n\n👤 *Nama:* ${user.name || '-'}\n🔑 *Token (PIN):* *${user.token}*\n🔰 *Status:* ${user.role.toUpperCase()}\n\n*Cara Masuk:*\n1. Buka tautan website Rumah Bahasa Arab.\n2. Klik tombol "Masuk" di pojok kanan.\n3. Ketikkan Nama dan Token (PIN) di atas secara presisi (huruf besar/kecil berpengaruh).\n\n_Mohon untuk tidak membagikan Token ini kepada pihak lain demi keamanan akun Anda._\n\nSelamat belajar!`;
          
-         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+        const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(text)}`; 
          window.open(whatsappUrl, '_blank');
       };
 
@@ -2188,7 +2245,7 @@
 
     const ManajemenProgramAdmin = ({ courses, db, storage, role, currentUserUid }) => {
       const [view, setView] = useState('list');
-      const [formData, setFormData] = useState({ id: '', title: '', desc: '', kategori: "Bahasa Arab", status: 'Draft', coverUrl: '' });
+      const [formData, setFormData] = useState({ id: '', title: '', desc: '', kategori: "Bahasa Arab", status: 'Draft', coverUrl: '', creator_id: currentUserUid });
       const [kategoriFilter, setKategoriFilter] = useState('Semua');
       const [isSubmitting, setIsSubmitting] = useState(false);
       const [isUploading, setIsUploading] = useState(false);
@@ -2287,7 +2344,7 @@
          }
       };
 
-      const handleAdd = () => { setFormData({ id: 'crs_' + Date.now().toString(36), title: '', desc: '', kategori: "Bahasa Arab", status: 'Draft', coverUrl: '', modules: [] }); setUploadMsg(''); setView('form'); };
+      const handleAdd = () => { setFormData({ id: 'crs_' + Date.now().toString(36), title: '', desc: '', kategori: "Bahasa Arab", status: 'Draft', coverUrl: '', modules: [], creator_id: currentUserUid }); setView('form'); }
       const handleEdit = (course) => { setFormData(course); setUploadMsg(''); setView('form'); };
       const openModules = (course) => { setActiveCourse(course); setView('modules'); };
 
@@ -2994,7 +3051,7 @@ if (view === 'modules') {
                            <span className="text-xs font-bold text-slate-500">{(prog.modules || []).length} Materi</span>
 <div className="flex gap-1 items-center">
     {/* Tombol Kelola Materi / Tumpukan Kertas dikunci jika program pusat dan yang login guru */}
-    {(role === 'admin' || (prog.creator_id && prog.creator_id === currentUserUid)) ? (
+    {(role === 'admin' || prog.creator_id === currentUserUid) ? (
         <button onClick={() => openModules(prog)} className="p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg" title="Kelola Materi">
             <Layers size={16} />
         </button>
@@ -3118,7 +3175,7 @@ const PersetujuanAdmin = ({ enrollments, courses, usersData, db }) => {
 
       const handleSendWaPersetujuan = (req) => {
           const text = `Assalamu'alaikum ${req.userName},\n\nAlhamdulillah, permintaan akses Anda untuk kelas *${req.courseTitle}* telah kami *SETUJUI* ✅.\n\nSilakan login ke portal Rumah Bahasa Arab menggunakan Token Anda (${req.userToken}) untuk mulai belajar.\n\nSelamat belajar!`;
-          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+          window.open(`whatsapp://send?text=${encodeURIComponent(text)}`, '_blank');  
       };
 
       return (
@@ -3151,7 +3208,7 @@ const PersetujuanAdmin = ({ enrollments, courses, usersData, db }) => {
       );
     };
 
-    const DetailProgram = ({ program, onBack, onEnroll, enrollmentStatus, role, onGoToClass, onManage }) => {
+    const DetailProgram = ({ program, onBack, onEnroll, enrollmentStatus, role, onGoToClass, onManage, currentUserUid }) => {
       if (!program) return null;
       return (
          <div className="p-4 md:p-6 lg:p-8 w-full max-w-5xl mx-auto space-y-6 pb-24">
@@ -3174,7 +3231,7 @@ const PersetujuanAdmin = ({ enrollments, courses, usersData, db }) => {
 </div>
                   <div className="mt-auto pt-6 border-t border-slate-100 w-full">
                 {/* Gembok Tombol Interaksi & Kelola di Detail Program */}
-                  {(role === 'admin' || (program.creator_id && program.creator_id === uid)) ? (
+                  {(role === 'admin' || (role === 'guru' && program.creator_id === currentUserUid)) ? (
                       <div className="flex flex-col sm:flex-row gap-3 w-full">
                         <Button onClick={onGoToClass}>
                             <MessageCircle size={18} className="mr-2"/> Masuk Kelas & Balas Diskusi
@@ -4931,8 +4988,8 @@ if (isAppInitializing) return (
         <ThemeContext.Provider value="admin">
            <InstallPrompt />
            <LandingPage onLogin={handleLoginSuccess} usersData={usersData} isDbReady={firebaseStatus !== 'connecting'} coursesData={courses} darkMode={darkMode} toggleDarkMode={() => setDarkMode(!darkMode)} lang={lang} setLang={setLang} pengumuman={pengumuman} libraryData={libraryData} />
-            <div className="md:hidden fixed bottom-12 left-4 right-4 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 rounded-2xl flex justify-around items-center p-2 shadow-2xl">
-            <div className="flex justify-around items-center w-full">
+          <div className="md:hidden fixed bottom-12 left-4 right-4 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 rounded-2xl flex justify-around items-center p-2 shadow-2xl">
+           <div className="flex justify-around items-center w-full">
             
             {/* BERANDA (Kembali ke paling atas) */}
             <button onClick={() => { 
@@ -5117,7 +5174,7 @@ if (isAppInitializing) return (
       {/* BILAH NAVIGASI BAWAH RESPONSIF (RBA)      */}
       {/* ========================================= */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around items-center p-2 pb-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        
+  
         {/* 1. JIKA BELUM LOGIN / TAMU (MUNCUL JIKA BELUM LOGIN / ROLE KOSONG) */}
         {(!isLoggedIn || !role || role === '') && (
           <div className="flex justify-around items-center w-full">
